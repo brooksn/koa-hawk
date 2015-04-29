@@ -1,0 +1,26 @@
+{
+  "name": "koa-hawk",
+  "version": "1.0.0",
+  "description": "Koa hawk authentication middleware",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brooksn/koa-hawk.git"
+  },
+  "keywords": [
+    "hawk",
+    "koa"
+  ],
+  "author": "Brooks Newberry",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/brooksn/koa-hawk/issues"
+  },
+  "homepage": "https://github.com/brooksn/koa-hawk#readme",
+  "dependencies": {
+    "hawk": "^2"
+  }
+}
