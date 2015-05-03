@@ -1,6 +1,6 @@
 {
   "name": "koa-hawk",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Koa hawk authentication middleware",
   "main": "index.js",
   "repository": {
