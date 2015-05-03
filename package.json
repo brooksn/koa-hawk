@@ -17,7 +17,7 @@
     "url": "https://github.com/brooksn/koa-hawk/issues"
   },
   "homepage": "https://github.com/brooksn/koa-hawk#readme",
-  "devDependencies":{
+  "devDependencies": {
     "koa": "*"
   },
   "dependencies": {
