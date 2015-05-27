@@ -11,20 +11,23 @@ var getCredentials = function (id, callback) {
   return callback(null, credentials);
 };
 
-promises.authenticate = function*(req, credentialsFunc, options){
+var serverAuthenticate = function(req, credentialsFunc, options){
   return new Promise(function(resolve, reject){
-    Hawk.server.authenticate(req, credentialsFunc, options, function (err, credentials, artifacts) {
-      if(err){
-        reject(err);
-      } else {
-        resolve({
-          credentials:credentials,
-          artifacts:artifacts
-        });
-      }
+    Hawk.server.authenticate(req, credentialsFunc, options, function (err, creds, attrs) {
+      if(err) reject(err);
+      else resolve({ credentials: creds, artifacts: attrs });
     });
   });
 };
+
+var uriAuthenticate = function(req, credentialsFunc, options){
+  return new Promise(function(resolve, reject){
+    Hawk.uri.authenticate(req, credentialsFunc, options, function(err, creds, attrs){
+      if (err) reject(err);
+      else resolve({credentials: creds, artifacts: attrs});
+    });
+  });
+}; 
 
 module.exports = function(credentialsFunc){
   if (credentialsFunc) getCredentials = credentialsFunc;
@@ -33,24 +36,39 @@ module.exports = function(credentialsFunc){
 };
 
 var hawkAuth = function *(next){
+  'use strict';
   this.hawk = {};
-  if (!this.request.get('authorization') && !this.request.get('Authorization')) {
+  var auth;
+  if (!this.request.get('authorization') && !this.query.bewit) {
     this.hawk.authorized = false;
-  } else {
+  } else if (this.request.get('authorization')) {
     try{
-      var auth = yield promises.authenticate(this.req, getCredentials, {});
+      auth = yield serverAuthenticate(this.req, getCredentials, {});
+      this.hawk.authtype = 'header';
       this.hawk.authorized = true;
-      this.hawk.credentials = auth.credentials;
-      this.hawk.user = auth.credentials.user;
-      this.hawk.algorithm = auth.credentials.algorithm || 'sha256';
-      this.hawk.key = auth.credentials.key;
-      this.hawk.id = auth.artifacts.id;
-      this.hawk.artifacts = auth.artifacts
     }
     catch(e){
       this.hawk.authorized = false;
       throw e;
     }
+  } else if (this.query.bewit) {
+    try{
+      auth = yield uriAuthenticate(this.req, getCredentials, {});
+      this.hawk.authtype = 'uri';
+      this.hawk.authorized = true;
+    }
+    catch(e){
+      this.hawk.authorized = false;
+      throw e;
+    }
+  }
+  if (auth && this.hawk.authorized === true) {
+    this.hawk.credentials = auth.credentials;
+    this.hawk.user = auth.credentials.user;
+    this.hawk.algorithm = auth.credentials.algorithm || 'sha256';
+    this.hawk.key = auth.credentials.key;
+    this.hawk.id = auth.artifacts.id;
+    this.hawk.artifacts = auth.artifacts;
   }
   yield next;
   if (!this.hawk.id) return;
@@ -58,7 +76,9 @@ var hawkAuth = function *(next){
     var credentials = yield promises.getCredentials(this.hawk.id);
     this.hawk.key = credentials.key;
   }
-  var header = Hawk.server.header(this.hawk.credentials, this.hawk.artifacts, { payload: this.response.body, contentType: this.response.type });
-  this.response.set('Server-Authorization', header);
+  var header;
+  if (this.hawk.authtype === 'header')
+  header = Hawk.server.header(this.hawk.credentials, this.hawk.artifacts, { payload: this.response.body, contentType: this.response.type });
+  if (header) this.response.set('Server-Authorization', header);
   return;
 };
