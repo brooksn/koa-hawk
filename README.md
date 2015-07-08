@@ -2,6 +2,7 @@
 Koa hawk authentication middleware
 
 [![npm version](https://badge.fury.io/js/koa-hawk.svg)](http://badge.fury.io/js/koa-hawk)
+[![Build Status](https://travis-ci.org/brooksn/koa-hawk.svg?branch=master)](https://travis-ci.org/brooksn/koa-hawk)
 
 ## Installation
 
