@@ -1,6 +1,8 @@
 # koa-hawk
 Koa hawk authentication middleware
 
+[![npm version](https://badge.fury.io/js/koa-hawk.svg)](http://badge.fury.io/js/koa-hawk)
+
 ## Installation
 
 ```js
@@ -25,8 +27,9 @@ var getCredentials = function (id, callback) {
 };
 
 app.use(hawk(getCredentials));
+
 app.use(function* (next){
-	if (this.hawk.authorized === true) this.response.body = "Welcome!";
+	if (this.hawk.authorized === true) this.response.body = 'Welcome!';
 });
 
 app.listen(3000);
