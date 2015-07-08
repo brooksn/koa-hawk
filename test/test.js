@@ -11,22 +11,25 @@ var credentials = {
 };
 
 test('validate request', coTape(function*(a){
-  a.plan(3);
+  a.plan(4);
   yield server.start(3000);
   var unauthorized = yield request(url);
   a.equal(unauthorized.statusCode, 401);
   
   var header = Hawk.client.header(url, 'GET', { credentials: credentials, ext: 'some-app-data' });
-  var opts = {
-      uri: url,
-      method: 'GET',
-      headers: {}
-  };
+  var opts = { uri: url, method: 'GET', headers: {} };
   opts.headers.Authorization = header.field;
   
   var authorized = yield request(opts);
   var validresponse = Hawk.client.authenticate(authorized, credentials, header.artifacts, { payload: authorized.body });
   a.equal(authorized.statusCode, 200);
   a.ok(validresponse, 'server response is authenticated');
+  
+  credentials.key += 'x';
+  var badheader = Hawk.client.header(url, 'GET', { credentials: credentials, ext: 'some-app-data' });
+  var badopts = { uri: url, method: 'GET', headers: {} };
+  badopts.headers.Authorization = badheader.field;
+  var misauthorized = yield request(badopts);
+  a.equal(misauthorized.statusCode, 500);
   yield server.stop();
 }));

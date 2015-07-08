@@ -28,7 +28,7 @@
     "tape": "^4.0.0"
   },
   "dependencies": {
-    "hawk": "^2",
+    "hawk": "^3",
     "thunkify-wrap": "^1"
   }
 }
